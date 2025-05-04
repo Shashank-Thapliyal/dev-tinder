@@ -19,7 +19,7 @@ export const validateData = (data) =>{
         throw new Error("Please enter a valid date")
     }
 
-    if(!validator.isIn(gender,["male","female","other"])){
+    if(!validator.isIn(gender,["male","female","others"])){
         throw new Error("Please enter a valid gender")
     }
 
