@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDb from "./db/database.js";
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js"
+import userRoutes from "./routes/userRoutes.js";
+import requestRoutes from "./routes/requestRoutes.js";
 
 const app = express();
 
@@ -16,7 +17,8 @@ app.use(express.json());
 
 //routes configuration
 app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes)
+app.use("/api/user", userRoutes);
+app.use("/api/requests",requestRoutes);
 
 connectDb().then(() => {
   app.listen(port, () => {

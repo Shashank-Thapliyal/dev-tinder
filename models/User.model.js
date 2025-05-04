@@ -76,6 +76,22 @@ const userSchema = new mongoose.Schema({
     skills:{
         type : [String],
         default : ["programming","c++"]
+    },
+    connections:{
+        type : [mongoose.Schema.ObjectId],
+        ref : 'User'
+    },
+    sentReq : {
+        type : [mongoose.Schema.ObjectId],
+        ref : 'ConnectionRequest',
+    },
+    receivedReq : {
+        type : [mongoose.Schema.ObjectId],
+        ref : 'ConnectionRequest',
+    },
+    blockedUsers :{
+        type : [mongoose.Schema.ObjectId],
+        ref : 'User',
     }
 
 },
