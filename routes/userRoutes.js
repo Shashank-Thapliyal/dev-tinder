@@ -1,6 +1,7 @@
 
 import express from "express";
-import { editProfile, viewProfile,getAllUsers, blockProfile, unblockProfile, getBlockedUsers } from "../controllers/user/profileController.js";
+import { editProfile, viewProfile,getAllUsers  } from "../controllers/user/profileController.js";
+import { blockProfile, unblockProfile, getBlockedUsers } from "../controllers/user/blockController.js";
 import { changePassword, deleteUser } from "../controllers/user/accountController.js";
 import authorize from "../middlewares/authorize.js"
 
