@@ -22,7 +22,7 @@ app.use("/api/requests",requestRoutes);
 
 connectDb().then(() => {
   app.listen(port, () => {
-    console.log("haiyya connected to server");
+    console.log("Server Running on port:", port);
   });
 }).catch((err)=>{
     console.log("failed to connect to db", err)
