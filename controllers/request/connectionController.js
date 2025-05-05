@@ -19,7 +19,6 @@ export const sendConnectionRequest = async (req, res) => {
       return res.status(404).json({ message: "Reciever doesn't Exist" });
     }
 
-    console.log(req.user)
     if (receiver.blockedUsers.includes(senderID) || sender.blockedUsers.includes(receiverID)) {
       return res.status(403).json({ message: "User is Blocked, Can't send request" });
     }
@@ -31,22 +30,27 @@ export const sendConnectionRequest = async (req, res) => {
       ],
     });
 
-    if (existingConnectionRequest) {
+    if (existingConnectionRequest && existingConnectionRequest.status === "accepted") {
       return res
         .status(400)
-        .json({ message: "Connection Request Already Exists" });
+        .json({ message: "Connection Already Exists" });
     }
 
-    const newConnectionReq =  new ConnectionRequest({senderID, receiverID});
-    await newConnectionReq.save();
-
+    if(!existingConnectionRequest){
+      const newConnectionReq =  new ConnectionRequest({senderID, receiverID});
+      await newConnectionReq.save();
+      res.status(201).json({ message: `Connection request sent successfully to ${receiverID}` });
+    }else if(existingConnectionRequest && existingConnectionRequest.status === "ignored"){
+      existingConnectionRequest.status = "pending";
+      await existingConnectionRequest.save();
+      res.status(200).json({ message: `Connection request resent successfully to ${receiverID}` });
+    }
     
     sender.sentReq.push(receiverID);
     receiver.receivedReq.push(senderID); 
 
     await sender.save();
     await receiver.save();
-    res.status(201).json({message : `Connection Req sent successfully to ${receiverID}`});
  
   } catch (err) {
     return res.status(500).json({
