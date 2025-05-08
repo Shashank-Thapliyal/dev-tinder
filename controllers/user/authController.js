@@ -85,3 +85,19 @@ export const loginUser = async (req, res) => {
     return res.status(500).json({ message: "Login Error", error : err.message});
   }
 };
+
+
+export const logoutUser = async (req, res) =>{
+    try {
+      const loggedinUser = req.user;
+      
+      if(loggedinUser){
+        res.clearCookie("token");
+        return res.status(200).json({message : "User logged out successfully"});
+      }
+
+      return res.status(401).json({message : "User not logged in"});
+    } catch (err) {
+      return res.status(500).json({message : "Error while loggin out the user", error: err.message});
+    }
+}
