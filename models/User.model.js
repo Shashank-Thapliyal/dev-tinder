@@ -83,11 +83,11 @@ const userSchema = new mongoose.Schema({
     },
     sentReq : {
         type : [mongoose.Schema.ObjectId],
-        ref : 'ConnectionRequest',
+        ref : 'User',
     },
     receivedReq : {
         type : [mongoose.Schema.ObjectId],
-        ref : 'ConnectionRequest',
+        ref : 'User',
     },
     blockedUsers :{
         type : [mongoose.Schema.ObjectId],
