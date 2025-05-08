@@ -2,9 +2,6 @@ import { findByID } from "../../db/userQueries.js";
 
 import ConnectionRequestModel from "../../models/ConnectionRequest.model.js";
 
-
-
-
 //block profile
 export const blockProfile = async ( req, res ) =>{
     try {
