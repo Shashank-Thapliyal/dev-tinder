@@ -3,6 +3,7 @@ import { validateData } from "../../utils/validateSignUpData.js"
 import { encryptPassword, comparePassword } from "../../utils/encrypting.js";
 import { findByEmail, findByUserName } from "../../db/userQueries.js";
 import jwt from "jsonwebtoken";
+import { sanitizeData } from "../../middlewares/userDataSanitizer.js";
 
 //register user
 export const signupUser = async (req, res) => {
@@ -79,7 +80,9 @@ export const loginUser = async (req, res) => {
 
     res.cookie("token", token);
 
-    res.status(200).json({ user: existingUser });
+    const data  = sanitizeData(existingUser);
+
+    res.status(200).json({ user: data });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Login Error", error : err.message});
