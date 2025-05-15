@@ -1,6 +1,7 @@
 import { findByID } from "../../db/userQueries.js";
+import { deleteConnectionRequest } from "../../middlewares/deleteConnectionRequest.js";
 
-import ConnectionRequestModel from "../../models/ConnectionRequest.model.js";
+import ConnectionRequest from "../../models/ConnectionRequest.model.js";
 
 //block profile
 export const blockProfile = async ( req, res ) =>{
@@ -9,7 +10,7 @@ export const blockProfile = async ( req, res ) =>{
       const user = await findByID(req.user.userID);
       const userToBlock = await findByID(blockUserID);
   
-      if(blockUserID === user._id){
+      if(blockUserID.toString() === user._id.toString()){
         return res.status(400).json({message: "Invalid Block Request"});
       }
   
@@ -17,7 +18,7 @@ export const blockProfile = async ( req, res ) =>{
         return res.status(404).json({message : "User Doesn't Exist"});
       }
   
-      if(user.blockedUsers.includes(blockUserID)){
+      if(user.blockedUsers.map(id => id.toString()).includes(blockUserID.toString())){
         return res.status(409).json({message: "You have already blocked the user"});
       }
       
@@ -26,15 +27,20 @@ export const blockProfile = async ( req, res ) =>{
   
       user.connections.pull(blockUserID);
       userToBlock.connections.pull(user._id);
-  
-      await ConnectionRequestModel.deleteMany({
-        $or: [
-          { senderID: user._id, receiverID: blockUserID },
-          { senderID: blockUserID, receiverID: user._id },
+
+      await user.save();
+      await userToBlock.save();
+      //also delete connection request if any exists
+      const connectionReq = await ConnectionRequest.findOne({
+        $or : [
+          { senderID : blockUserID, receiverID : user._id },
+          { senderID : user._id , receiverID : blockUserID }
         ]
-      });
-      
-  
+      }).select("_id");
+
+      if(connectionReq._id){
+        deleteConnectionRequest(connectionReq);
+      }
   
       res.status(200).json({message: "User Blocked Successfully"});
     } catch (err) {
@@ -50,7 +56,7 @@ export const blockProfile = async ( req, res ) =>{
       const user = await findByID(req.user.userID);
       const userToUnblock = await findByID(unblockUserID);
   
-      if(unblockUserID === user._id){
+      if(unblockUserID.toString() === user._id.toString()){
         return res.status(400).json({message: "Invalid Block Request"});
       }
   
@@ -58,7 +64,7 @@ export const blockProfile = async ( req, res ) =>{
         return res.status(404).json({message : "User Doesn't Exist"});
       }
   
-      if(!user.blockedUsers.includes(unblockUserID)){
+      if(!user.blockedUsers.map( id => id.toString() ).includes(unblockUserID.toString())){
         return res.status(409).json({message: "You have not blocked the user"});
       }
       

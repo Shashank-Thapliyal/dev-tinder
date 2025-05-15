@@ -6,7 +6,7 @@ import {getSentRequests, getPendingRequests } from "../controllers/request/reque
 const router = express.Router();
 
 router.post("/send/:userID", authorize, sendConnectionRequest);
-router.patch("/respond/:connectionReq", authorize, respondToConnectionReq);
+router.patch("/respond/:requestID", authorize, respondToConnectionReq);
 
 router.get("/sentRequests", authorize, getSentRequests);
 router.get("/pendingRequests", authorize, getPendingRequests);

@@ -4,9 +4,15 @@ export const getSentRequests = async (req, res) =>{
     try {
         const userID = req.user.userID;
 
-        const user = await User.findById(userID).populate(
-            "sentReq", "firstName lastName photoURL email"
-        )
+        const user = await User.findById(userID).populate({
+                    path: 'sentReq',
+                    populate: {
+                    path: 'receiverID',
+                    select: 'username firstName middleName lastName profilePic skills gender dob about'
+                    }
+  });
+
+  console.log(user);
 
         if(!user){
             return res.status(404).json({message: "Requests not found"});
@@ -23,7 +29,14 @@ export const getPendingRequests = async (req, res) =>{
         const userID = req.user.userID;
 
         const user = await User.findById(userID).populate(
-            "receivedReq", "firstName lastName photoURL email"
+            {
+                path : 'receivedReq',
+                match : { status : "pending"},
+                populate : {
+                    path : "senderID",
+                    select: 'userName firstName middleName lastName profilePic skills gender dob about'
+                }
+            }
         );
 
         if(!user){

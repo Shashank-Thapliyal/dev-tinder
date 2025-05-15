@@ -1,4 +1,6 @@
 import { findByID } from "../../db/userQueries.js";
+import { deleteConnectionRequest } from "../../middlewares/deleteConnectionRequest.js";
+import { sanitizeData } from "../../middlewares/userDataSanitizer.js";
 import ConnectionRequest from "../../models/ConnectionRequest.model.js";
 
 //sending a new connection request
@@ -18,8 +20,12 @@ export const sendConnectionRequest = async (req, res) => {
     if (!receiver) {
       return res.status(404).json({ message: "Receiver doesn't Exist" });
     }
+    // Prevent sending request if already connected
+    if (sender.connections.map(id => id.toString()).includes(receiverID.toString()) || receiver.connections.map(id => id.toString()).includes(senderID.toString())) {
+      return res.status(400).json({ message: "You are already connected with this user" });
+    }
 
-    if (receiver.blockedUsers.includes(senderID) || sender.blockedUsers.includes(receiverID)) {
+    if (receiver.blockedUsers.map(id => id.toString()).includes(senderID.toString()) || sender.blockedUsers.map(id => id.toString()).includes(receiverID.toString())) {
       return res.status(403).json({ message: "User is Blocked, Can't send request" });
     }
     
@@ -46,8 +52,8 @@ export const sendConnectionRequest = async (req, res) => {
       const newConnectionReq =  new ConnectionRequest({senderID, receiverID});
       await newConnectionReq.save();
 
-      sender.sentReq.push(receiverID);
-      receiver.receivedReq.push(senderID); 
+      sender.sentReq.push(newConnectionReq._id);
+      receiver.receivedReq.push(newConnectionReq._id); 
 
       await sender.save();
       await receiver.save();
@@ -55,10 +61,9 @@ export const sendConnectionRequest = async (req, res) => {
     }else if(existingConnectionRequest && existingConnectionRequest.status === "ignored"){
       existingConnectionRequest.status = "pending";
       await existingConnectionRequest.save();
-      sender.sentReq.push(receiverID);
-      receiver.receivedReq.push(senderID); 
-  
-      
+      sender.sentReq.push(existingConnectionRequest._id);
+      receiver.receivedReq.push(existingConnectionRequest._id); 
+        
       await sender.save();
       await receiver.save();
       res.status(200).json({ message: `Connection request resent successfully to ${receiverID}` });
@@ -75,7 +80,7 @@ export const sendConnectionRequest = async (req, res) => {
 //responding to a recieved connection request
 export const respondToConnectionReq = async (req, res) =>{
   try {
-    const { requestID } = req.params;
+    const  requestID = req.params.requestID;
     const { status } = req.body;
     const connectionReq = await ConnectionRequest.findById(requestID);
     if(!connectionReq){
@@ -103,16 +108,15 @@ export const respondToConnectionReq = async (req, res) =>{
       await receiver.save();
     }
 
-    sender.sentReq.pull(receiverID);
-    receiver.receivedReq.pull(senderID);
-    
-    await ConnectionRequest.findByIdAndDelete(requestID);
+    await deleteConnectionRequest(requestID, res);
 
-    return res.status(200).json({
+    const senderData = sanitizeData(sender);
+    const receiverData = sanitizeData(receiver);
+      return res.status(200).json({
       message: `Connection Request ${status}`,
-      user1 : sender,
-      user2 : receiver
-    })
+      user1 :  senderData,
+      user2 : receiverData
+    });
     
   } catch (err) {
     return res.status(500).json({message: "error while responding to request", error : err.message});
