@@ -1,3 +1,4 @@
+import { connections } from "mongoose";
 import {
   findAll,
   findByID,
@@ -5,22 +6,37 @@ import {
   updateUser,
 } from "../../db/userQueries.js";
 import ConnectionRequestModel from "../../models/ConnectionRequest.model.js";
+import User from "../../models/User.model.js";
+import { populate } from "dotenv";
 
 
 //view profile
 export const viewProfile = async (req, res) => {
   try {
     const userID = req.params.userID;
-    console.log(userID);
 
     const user = await findByID(userID);
-
-    console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User Not Found!" });
     }
 
-    return res.status(200).json({ user });
+    const loggedInUserID = req.user.userID;
+    const loggedInUser = await findByID(loggedInUserID);
+    
+    if(loggedInUser.blockedUsers.map( id => id.toString()).includes(userID.toString())
+       || user.blockedUsers.map( id => id.toString()).includes(loggedInUserID.toString())){
+      return res.status(409).json({message : "User is Blocked"});
+    }
+   
+    const ALLOWED_DATA = ["firstName", "middleName", "lastName", "userName", "dob", "gender", "profilePic", "about", "skills"];
+    const data = {};
+
+    ALLOWED_DATA.forEach( (val) =>{
+      if( user[val] !== null && user[val] !== undefined )
+        data[val] = user[val];
+    })
+    
+    return res.status(200).json({ data });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error while fetching User Data", error: err.message });
@@ -98,7 +114,27 @@ export const editProfile = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await findAll();
+    let limit = parseInt(req.query.limit) || 10;
+    limit = limit > 50 ? 50 : limit;
+
+    const page = parseInt(req.query.page) || 1;
+
+    const skip = (page - 1) * limit;
+
+    const loggedInUser = await findByID(req.user.userID)
+    .select("connections blockedUsers")
+    .populate("sentReq", "receiverID");
+
+    const sentReq = loggedInUser.sentReq.map( req => req.receiverID?.toString());
+
+    const users = await User.find({
+        _id : {
+            $nin : [...loggedInUser.connections, req.user.userID, ...loggedInUser.blockedUsers, ...sentReq]
+      }}
+    )
+    .select("firstName middleName lastName userName dob gender profilePic about skills")
+    .skip(skip)
+    .limit(limit);
 
     if (!users) return res.status(404).json({ message: "No users found!" });
 
@@ -107,3 +143,21 @@ export const getAllUsers = async (req, res) => {
     return res.status(500).json({ message: "Error while fetching the users" ,error : err.message});
   }
 };
+
+export const getConnections = async (req, res) =>{
+  try {
+    const {userID} = req.user;
+    const userConnections = await findByID(userID).populate({
+        path : "connections",
+        select : "_id firstName middleName lastName userName profilePic about skills"
+        
+    })
+
+    if(!userConnections)
+        return res.status(404).json({message : "User Connections not found"});
+    
+    return res.status(200).json( {message : "Connection fetched successfully", data : userConnections.connections})
+  } catch (err) {
+    return res.status(500).json({ message : "Error while Loading Connections", "error" : err.message});
+  }
+}

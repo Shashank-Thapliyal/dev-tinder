@@ -63,7 +63,6 @@ const userSchema = new mongoose.Schema({
                 throw new Error("Invalid photo URL")
             }
         }
-
     },
     isAdmin: {
         type: Boolean,
@@ -87,7 +86,7 @@ const userSchema = new mongoose.Schema({
     },
     receivedReq : {
         type : [mongoose.Schema.ObjectId],
-        ref : 'ConnnectionRequest',
+        ref : 'ConnectionRequest',
     },
     blockedUsers :{
         type : [mongoose.Schema.ObjectId],
