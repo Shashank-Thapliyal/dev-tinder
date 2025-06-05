@@ -1,7 +1,7 @@
 import validator from "validator";
 
 export const validateData = (data) =>{
-    const {firstName,lastName,userName,email,password,confirmPassword,dob,gender,profilePic,skills} = data.body;
+    const {firstName,lastName,userName,email,password,dob,gender} = data.body;
 
     if(!firstName || !userName || !email || !password  || !dob || !gender  ){
         throw new Error("Please enter the required fields")
@@ -23,7 +23,4 @@ export const validateData = (data) =>{
         throw new Error("Please enter a valid gender")
     }
 
-    if(profilePic &&!validator.isURL(profilePic)){
-        throw new Error("Please enter a valid profile picture url")
-    }
 }

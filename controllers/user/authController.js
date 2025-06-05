@@ -14,10 +14,10 @@ export const signupUser = async (req, res) => {
       lastName,
       userName,
       email,
+      about,
       password,
       dob,
-      gender,
-      profilePic,
+      gender
     } = req.body;
 
     const existingUserEmail = await findByEmail(email);
@@ -38,8 +38,8 @@ export const signupUser = async (req, res) => {
       email,
       password: hashedPassword,
       dob,
+      about,
       gender,
-      profilePic,
     });
     await newUser.save();
 

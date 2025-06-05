@@ -57,39 +57,34 @@ const userSchema = new mongoose.Schema({
     },
     profilePic: {
         type: String,
-        default: "",
         validate(value){
             if(!validator.isURL(value)){
                 throw new Error("Invalid photo URL")
             }
         }
     },
-    isAdmin: {
-        type: Boolean,
-        default: false
-    },
     about :{
         type : String,
-        default : "I am a developer"
+        default : ""
     },
     skills:{
         type : [String],
         default : ["programming","c++"]
     },
     connections:{
-        type : [mongoose.Schema.ObjectId],
+        type : [mongoose.Schema.Types.ObjectId],
         ref : 'User'
     },
     sentReq : {
-        type : [mongoose.Schema.ObjectId],
+        type : [mongoose.Schema.Types.ObjectId],
         ref : 'ConnectionRequest',
     },
     receivedReq : {
-        type : [mongoose.Schema.ObjectId],
+        type : [mongoose.Schema.Types.ObjectId],
         ref : 'ConnectionRequest',
     },
     blockedUsers :{
-        type : [mongoose.Schema.ObjectId],
+        type : [mongoose.Schema.Types.ObjectId],
         ref : 'User',
     }
 
