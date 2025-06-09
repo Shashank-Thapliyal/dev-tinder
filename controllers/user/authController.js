@@ -81,7 +81,7 @@ export const loginUser = async (req, res) => {
     res.cookie("token", token);
 
     const data  = sanitizeData(existingUser);
-
+    console.log(data)
     res.status(200).json({ user: data });
   } catch (err) {
     console.error(err);

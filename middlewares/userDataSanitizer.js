@@ -8,6 +8,7 @@
           profilePic : user.profilePic,
           about : user.about,
           skills: user.skills,
-          email : user.email
+          email : user.email,
+          dob : user.dob
       }
     }

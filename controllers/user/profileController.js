@@ -1,4 +1,3 @@
-import { connections } from "mongoose";
 import {
   findAll,
   findByID,
@@ -7,7 +6,6 @@ import {
 } from "../../db/userQueries.js";
 import ConnectionRequestModel from "../../models/ConnectionRequest.model.js";
 import User from "../../models/User.model.js";
-import { populate } from "dotenv";
 
 
 //view profile

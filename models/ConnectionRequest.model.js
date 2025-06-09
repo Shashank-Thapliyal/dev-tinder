@@ -9,7 +9,7 @@ const ConnectionRequestSchema = new mongoose.Schema(
       required: true,
     },
     receiverID: {
-      type: mongoose.Schema.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
