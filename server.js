@@ -1,18 +1,25 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import cookieParser from "cookie-parser";
 import connectDb from "./db/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import requestRoutes from "./routes/requestRoutes.js";
-
-import explainTest from "./routes/explain.test.js";
+import cors from "cors";
 
 const app = express();
 
 app.use(cookieParser());
 
-dotenv.config();
+const corsOptions = {
+  origin: 'http://localhost:5173', 
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 const port = process.env.PORT || 5555;
 
 app.use(express.json());
@@ -21,9 +28,6 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/requests",requestRoutes);
-
-//testing .explain()
-//app.use(explainTest);
 
 connectDb().then(() => {
   app.listen(port, () => {
