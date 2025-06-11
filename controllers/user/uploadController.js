@@ -1,3 +1,4 @@
+import { findByID } from "../../db/userQueries.js";
 import cloudinary from "../../utils/config/cloudinary.js";
 
 const uploadProfilePic = async (req, res) => {
@@ -24,11 +25,17 @@ const uploadProfilePic = async (req, res) => {
             upload_stream.end(req.file.buffer);
         });
 
-        return res.status(200).json({
+        
+        const loggedInUser = await findByID(req.user.userID.toString());
+        loggedInUser.profilePic = uploadResult.secure_url;
+        await loggedInUser.save();
+        
+         res.status(200).json({
             message: "Image uploaded successfully",
             publicID : uploadResult.public_id,
             url: uploadResult.secure_url
         });
+
 
     } catch (error) {
         return res.status(500).json({
